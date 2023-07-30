@@ -20,7 +20,8 @@ CREATE TABLE "Role" (
 -- CreateTable
 CREATE TABLE "Data" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "json" TEXT NOT NULL
+    "json" TEXT NOT NULL,
+    "name" TEXT NOT NULL
 );
 
 -- CreateIndex

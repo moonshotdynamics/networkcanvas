@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
         },
       },
     });
-
     return NextResponse.json(user, { status: 200 });
   } catch (err) {
     return NextResponse.json({

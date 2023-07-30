@@ -1,3 +1,4 @@
+import { prisma } from './prisma';
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GitHubProvider from 'next-auth/providers/github';
@@ -13,6 +14,9 @@ export const authOptions: NextAuthOptions = {
     GitHubProvider({
       clientId: process.env.GITHUB_ID as string,
       clientSecret: process.env.GITHUB_SECRET as string,
+        profile(profile) {
+        return { role: profile.role ?? "participant", ...profile }
+      },
     }),
     CredentialsProvider({
       name: 'Credentials',
@@ -43,6 +47,46 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn(user: any, profile: any) {
+      console.log(profile, "PROFILE");
+      const flattenedUser = user.user;
+      const existingAccount = await prisma.user.findUnique({
+        where: {
+          email: flattenedUser.email,
+        },
+      });
+
+      if (!existingAccount) {
+        let participantRole = await prisma.role.findFirst({
+          where: { name: 'participant' },
+        });
+
+        if (!participantRole) {
+          participantRole = await prisma.role.create({
+            data: {
+              name: 'participant',
+            },
+          });
+        }
+
+        const newUser = await prisma.user.create({
+          data: {
+            email: flattenedUser.email,
+            name: flattenedUser.name,
+            roleId: participantRole.id,
+          },
+        });
+
+        return {
+          ...user,
+          role: newUser.roleId,
+        };
+      } else {
+        return {
+          ...existingAccount,
+        };
+      }
+    },
     session: ({ session, token }) => {
       return {
         ...session,

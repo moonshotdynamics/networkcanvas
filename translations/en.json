@@ -1,0 +1,15 @@
+{
+  "Index": {
+    "greeting": "Welcome",
+    "unauthenticated": "Welcome to Network Canvas. Sign in to get started",
+    "title": "Your current account role is: ",
+    "accountRole": "Change your account role here:"
+  },
+  "Upload": {
+    "title": "Select JSON file to upload."
+  },
+  "FilesPage": {
+    "title": "You are not authenticated to see the contents of this page.",
+    "uploadedFiles": "Uploaded files"
+  }
+}
