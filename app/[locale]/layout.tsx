@@ -35,7 +35,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <NextAuthProvider>
+          <NextAuthProvider locale={locale}>
             <Header />
             {children}
           </NextAuthProvider>

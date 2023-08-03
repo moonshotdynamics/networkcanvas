@@ -9,7 +9,29 @@ type File = {
   name: string;
 };
 
-export default function FilesPage() {
+const LoadingView = () => (
+  <div className="flex items-center justify-center min-h-screen bg-purple-600">
+    <p>Loading...</p>
+  </div>
+);
+
+const UnauthenticatedView = () => {
+  const t = useTranslations('FilesPage');
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
+      <h1 className="mb-4 text-3xl text-white">{t('title')}</h1>
+      <a
+        href="/login"
+        className="px-6 py-3 text-white transition-all duration-200 ease-in-out rounded-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600"
+      >
+        Sign in
+      </a>
+    </div>
+  );
+};
+
+const FilesPage = () => {
   const { data: session, status } = useSession();
   const [files, setFiles] = useState<File[]>([]);
   const t = useTranslations('FilesPage');
@@ -40,44 +62,35 @@ export default function FilesPage() {
     }
   };
 
+  const renderView = () => {
     if (status === 'loading') {
-      return (
-        <div className="flex items-center justify-center min-h-screen bg-purple-600">
-          <p>Loading...</p>
-        </div>
-      );
+      return <LoadingView />;
     }
 
-  if (status !== 'authenticated' || typeof session === 'boolean') {
+    if (status !== 'authenticated' || typeof session === 'boolean') {
+      return <UnauthenticatedView />;
+    }
+
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
-        <h1 className="mb-4 text-3xl text-white">{t('title')}</h1>
-        <a
-          href="/login"
-          className="px-6 py-3 text-white transition-all duration-200 ease-in-out rounded-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600"
-        >
-          Sign in
-        </a>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-purple-500 dark:bg-purple-700">
+        <h1 className="mb-8 text-white underline">{t('uploadedFiles')}</h1>
+        {files.map((file) => (
+          <div
+            key={file.id}
+            className="w-full p-2 m-2 text-center bg-white rounded dark:bg-gray-800 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"
+            role="button"
+            onClick={() => downloadFile(file)}
+          >
+            <p className="text-purple-500 dark:text-purple-300">
+              File number: {file.name}
+            </p>
+          </div>
+        ))}
       </div>
     );
-  }
+  };
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-purple-500 dark:bg-purple-700">
-      <h1 className="mb-8 text-white underline">{t("uploadedFiles")}</h1>
-      {files.map((file) => (
-        <div
-          key={file.id}
-          className="w-full p-2 m-2 text-center bg-white rounded dark:bg-gray-800 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"
-          role="button"
-          onClick={() => downloadFile(file)}
-        >
-          <p className="text-purple-500 dark:text-purple-300">
-            File number: {file.name}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
+  return <>{renderView()}</>;
+};
 
+export default FilesPage;

@@ -5,15 +5,6 @@ import { useState, useEffect } from 'react';
 import { toastSuccess, toastError } from '@/utils/toasts';
 import { useTranslations } from 'next-intl';
 
-type UserRole = 'admin' | 'user' | 'participant';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-}
-
 export default function Home() {
   const { data: session, status, update } = useSession();
   const [selectedRole, setSelectedRole] = useState<UserRole>();
@@ -22,20 +13,19 @@ export default function Home() {
     setSelectedRole(user?.role);
   }, [user]);
   const t = useTranslations('Index');
-  console.log(user);
 
   const updateRole = async (newRole: UserRole) => {
     if (user?.role !== newRole) {
       try {
         const response = await fetch('/api/users', {
-          method: 'POST',
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: user?.id,
             role: newRole,
           }),
         });
-
+        
         if (response.ok) {
           update({
             ...session,
@@ -44,7 +34,6 @@ export default function Home() {
               role: newRole,
             },
           });
-          console.log(session);
           toastSuccess('Role updated');
         } else {
           toastError('Failed to update role');
@@ -59,19 +48,19 @@ export default function Home() {
     }
   };
 
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-purple-600">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  const Loading = () => (
+    <div className="flex items-center justify-center min-h-screen bg-purple-600">
+      <p>Loading...</p>
+    </div>
+  );
 
-  return status === 'authenticated' ? (
+  const Authenticated = () => (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
       <nav className="absolute top-0 flex items-center justify-around w-full h-16 bg-purple-700"></nav>
       <main className="flex flex-col items-center justify-center text-white">
-        <h1 className="mb-4 text-3xl">{t('greeting') } {user.name}</h1>
+        <h1 className="mb-4 text-3xl">
+          {t('greeting')} {user.name}
+        </h1>
         <h2 className="mb-4 text-xl">{t('title')}</h2>
         <pre className="mb-8 text-lg">{JSON.stringify(user?.role)}</pre>
 
@@ -103,7 +92,9 @@ export default function Home() {
         </button>
       </main>
     </div>
-  ) : (
+  );
+
+  const DefaultView = () => (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
       <h1 className="mb-4 text-sm text-white sm:text-base md:text-lg lg:text-xl xl:text-2xl">
         {t('unauthenticated')}
@@ -116,4 +107,16 @@ export default function Home() {
       </a>
     </div>
   );
+
+  const Views = {
+    "loading": <Loading />,
+    "authenticated": <Authenticated />,
+    "unauthenticated": <DefaultView/>
+  }
+
+  const CurrentView = () => Views[status as Status];
+
+  return (
+    <div><CurrentView /></div>
+  )
 }

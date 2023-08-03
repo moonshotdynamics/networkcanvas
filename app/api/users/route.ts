@@ -13,7 +13,7 @@ export async function GET (req: NextRequest, res: NextResponse) {
   }
 };
 
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const { userId, role } = await req.json();
 
   try {
@@ -38,7 +38,11 @@ export async function POST(req: NextRequest) {
           connect: { id: roleRecord.id },
         },
       },
+      include: {
+        role: true,
+      },
     });
+
     return NextResponse.json(user, { status: 200 });
   } catch (err) {
     return NextResponse.json({

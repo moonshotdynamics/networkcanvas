@@ -1,7 +1,29 @@
 import { prisma } from './prisma';
+import { path } from 'ramda';
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GitHubProvider from 'next-auth/providers/github';
+
+
+interface UserProfile {
+  id: number;
+  name: string;
+  image: string;
+  role: string;
+  email: string;
+}
+interface Account {
+  provider: string;
+}
+
+interface User {
+  user: UserProfile;
+  account: Account;
+  id: string;
+  role: string;
+}
+
+
 
 export const authOptions: NextAuthOptions = {
   pages: {
@@ -14,8 +36,8 @@ export const authOptions: NextAuthOptions = {
     GitHubProvider({
       clientId: process.env.GITHUB_ID as string,
       clientSecret: process.env.GITHUB_SECRET as string,
-        profile(profile) {
-        return { role: profile.role ?? "participant", ...profile }
+      profile(profile) {
+        return { role: profile.role ?? 'participant', ...profile };
       },
     }),
     CredentialsProvider({
@@ -47,47 +69,84 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn(user: any, profile: any) {
-      console.log(profile, "PROFILE");
-      const flattenedUser = user.user;
-      const existingAccount = await prisma.user.findUnique({
-        where: {
-          email: flattenedUser.email,
-        },
-      });
-
-      if (!existingAccount) {
-        let participantRole = await prisma.role.findFirst({
-          where: { name: 'participant' },
-        });
-
-        if (!participantRole) {
-          participantRole = await prisma.role.create({
-            data: {
-              name: 'participant',
-            },
-          });
-        }
-
-        const newUser = await prisma.user.create({
-          data: {
+    signIn: async (user: User) => {
+      if (user && user.account.provider === 'credentials') {
+        return user;
+      }
+      if (user.account.provider === 'github') {
+        const flattenedUser = path(['user'], user);
+        const existingAccount = await prisma.user.findUnique({
+          where: {
             email: flattenedUser.email,
-            name: flattenedUser.name,
-            roleId: participantRole.id,
+          },
+          include: {
+            role: true,
           },
         });
 
-        return {
-          ...user,
-          role: newUser.roleId,
-        };
-      } else {
-        return {
-          ...existingAccount,
-        };
+        if (!existingAccount) {
+          let participantRole = await prisma.role.findFirst({
+            where: { name: 'participant' },
+          });
+
+          if (!participantRole) {
+            participantRole = await prisma.role.create({
+              data: {
+                name: 'participant',
+              },
+            });
+          }
+
+          const newUser = await prisma.user.create({
+            data: {
+              email: flattenedUser.email,
+              name: flattenedUser.name,
+              roleId: participantRole.id,
+            },
+          });
+
+          return newUser;
+        } else {
+          user.id = existingAccount.id;
+          user.role = existingAccount.role;
+
+          return true;
+        }
       }
     },
-    session: ({ session, token }) => {
+    jwt: async ({ token, user, account, trigger, session }) => {
+      if (user) {
+        if (account?.provider === 'credentials') {
+          return {
+            ...token,
+            id: user.id,
+            role: user.role.name,
+          };
+        }
+        if (account?.provider === 'github') {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email },
+            include: { role: true },
+          });
+
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role.name;
+          }
+        }
+      }
+
+      if (trigger === 'update') {
+        return {
+          ...token,
+          ...session.user,
+        };
+      }
+
+      return token;
+    },
+
+    session: async ({ session, token }) => {
       return {
         ...session,
         user: {
@@ -96,17 +155,6 @@ export const authOptions: NextAuthOptions = {
           role: token.role,
         },
       };
-    },
-    jwt: ({ token, user }) => {
-      if (user) {
-        const u = user as unknown as any;
-        return {
-          ...token,
-          id: u.id,
-          role: u.role.name,
-        };
-      }
-      return token;
     },
   },
 };
