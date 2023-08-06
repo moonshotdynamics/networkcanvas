@@ -22,7 +22,7 @@ const UnauthenticatedView = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
       <h1 className="mb-4 text-3xl text-white">{t('title')}</h1>
       <a
-        href="/login"
+        href="/auth/login"
         className="px-6 py-3 text-white transition-all duration-200 ease-in-out rounded-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600"
       >
         Sign in

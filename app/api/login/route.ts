@@ -1,19 +1,21 @@
 import { prisma } from '../../lib/prisma';
 import { compare } from 'bcryptjs';
+import { NextResponse, NextRequest } from 'next/server';
 
 interface RequestBody {
   email: string;
   password: string;
 }
+
 interface User {
   id: number;
   name: string;
   email: string;
   password: string;
 }
-export async function POST(req: Request) {
-  const body: RequestBody = await req.json();
 
+export async function POST(req: NextRequest, res: NextResponse) {
+  const body: RequestBody = await req.json();
 
   const user = await prisma.user.findUnique({
     where: {
@@ -24,9 +26,22 @@ export async function POST(req: Request) {
     },
   });
 
+  if (!user) {
 
-  if (user && (await compare(body.password, user.password as string))) {
+    return NextResponse.json(
+    { error: 'Email not found'
+    },
+      { status: 404 });
+  }
+
+  const passwordMatch = await compare(body.password, user.password as string);
+  if (passwordMatch) {
     const { password, ...userWithoutPass } = user;
-    return new Response(JSON.stringify(userWithoutPass));
-  } else return new Response(JSON.stringify(null));
+    return NextResponse.json(userWithoutPass);
+  } else {
+    return NextResponse.json(
+      { error: "Invalid password"},
+      { status: 500 })
+  }
 }
+

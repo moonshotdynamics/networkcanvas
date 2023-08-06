@@ -3,9 +3,12 @@
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { toastSuccess, toastError } from '@/utils/toasts';
 
 export const LoginForm = () => {
   const router = useRouter();
+  const { data: session, status, update } = useSession();
   const [loading, setLoading] = useState(false);
   const [formValues, setFormValues] = useState({
     email: '',
@@ -37,7 +40,7 @@ export const LoginForm = () => {
       if (!res?.error) {
         router.push(callbackUrl);
       } else {
-        setError('invalid email or password');
+        setError('Invalid email or password'); 
       }
     } catch (error: any) {
       setLoading(false);

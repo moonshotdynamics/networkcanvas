@@ -100,7 +100,7 @@ export default function Home() {
         {t('unauthenticated')}
       </h1>
       <a
-        href="/login"
+        href="/auth/login"
         className="px-2 py-1 text-white transition-all duration-200 ease-in-out rounded-full sm:px-3 sm:py-2 md:px-4 md:py-2 lg:px-6 lg:py-3 xl:px-8 xl:py-4 bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600"
       >
         Sign in

@@ -4,30 +4,33 @@ import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GitHubProvider from 'next-auth/providers/github';
 
-
 interface UserProfile {
-  id: number;
-  name: string;
-  image: string;
-  role: string;
-  email: string;
+  id: string;
+  name: string | null;
+  image: string | null;
+  role: {
+    id: number,
+    name: string
+  };
+  email: string | null;
 }
+
 interface Account {
   provider: string;
 }
 
-interface User {
+interface User extends UserProfile {
   user: UserProfile;
   account: Account;
-  id: string;
-  role: string;
 }
+
 
 
 
 export const authOptions: NextAuthOptions = {
   pages: {
-    signIn: '/login',
+    signIn: '/auth/login',
+    error:'/auth/error'
   },
   session: {
     strategy: 'jwt',
@@ -42,10 +45,7 @@ export const authOptions: NextAuthOptions = {
     }),
     CredentialsProvider({
       name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'text', placeholder: 'email@email.com' },
-        password: { label: 'Password', type: 'password' },
-      },
+      credentials: {},
       authorize: async (credentials: any) => {
         const res = await fetch(`${process.env.BASE_URL}/api/login`, {
           method: 'POST',
@@ -57,81 +57,75 @@ export const authOptions: NextAuthOptions = {
             password: credentials?.password,
           }),
         });
-
+        
         const user = await res.json();
 
-        if (user) {
-          return user;
+        if (user.error) {
+          throw new Error(user.error);
         } else {
-          return null;
+          return user
         }
       },
-    }),
+    })
   ],
   callbacks: {
+// @ts-ignore
     signIn: async (user: User) => {
       if (user && user.account.provider === 'credentials') {
         return user;
       }
-      if (user.account.provider === 'github') {
-        const flattenedUser = path(['user'], user);
-        const existingAccount = await prisma.user.findUnique({
-          where: {
-            email: flattenedUser.email,
-          },
-          include: {
-            role: true,
-          },
-        });
 
-        if (!existingAccount) {
-          let participantRole = await prisma.role.findFirst({
-            where: { name: 'participant' },
-          });
-
-          if (!participantRole) {
-            participantRole = await prisma.role.create({
-              data: {
-                name: 'participant',
-              },
-            });
-          }
-
-          const newUser = await prisma.user.create({
-            data: {
+      if (user && user.account.provider === 'github') {
+        const flattenedUser = await path(['user'], user);
+        if (flattenedUser.email) {
+          const existingAccount = await prisma.user.findUnique({
+            where: {
               email: flattenedUser.email,
-              name: flattenedUser.name,
-              roleId: participantRole.id,
+            },
+            include: {
+              role: true,
             },
           });
 
-          return newUser;
-        } else {
-          user.id = existingAccount.id;
-          user.role = existingAccount.role;
+          if (!existingAccount) {
+            const newUser = await prisma.user.create({
+              data: {
+                email: flattenedUser.email,
+                name: flattenedUser.name,
+                image: flattenedUser.image,
+                roleId: 1,
+              },
+            });
 
-          return true;
+            return newUser;
+          } else {
+            return existingAccount;
+          }
         }
       }
     },
     jwt: async ({ token, user, account, trigger, session }) => {
       if (user) {
+        const myUser = user as User;
         if (account?.provider === 'credentials') {
           return {
             ...token,
             id: user.id,
-            role: user.role.name,
+            role: myUser?.role.name,
           };
         }
         if (account?.provider === 'github') {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: user.email },
-            include: { role: true },
-          });
+          if (user?.email) {
+            const dbUser = await prisma.user.findUnique({
+              where: { email: user.email },
+              include: { role: true },
+            });
 
-          if (dbUser) {
-            token.id = dbUser.id;
-            token.role = dbUser.role.name;
+
+            if (dbUser) {
+              token.id = dbUser.id;
+              token.role = dbUser?.role.name;
+            }
           }
         }
       }

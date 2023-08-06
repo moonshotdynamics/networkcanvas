@@ -21,7 +21,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ user }) => {
         </li>
         <li className="mb-2 lg:mb-0">
           <Link
-            href="/login"
+            href="/auth/login"
             className="text-gray-800 transition-all hover:text-gray-600"
           >
             Login
