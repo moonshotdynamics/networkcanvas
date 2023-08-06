@@ -31,12 +31,12 @@ const Header: React.FC = () => {
   }, [isOpen]);
 
   return (
-    <header className="relative z-10 h-20 bg-white shadow-md">
+    <header className="relative z-10 h-20 bg-white shadow-md dark:bg-purple-900">
       <nav className="container flex items-center justify-between h-full px-6 mx-auto lg:px-0">
         <div>
           <Link
             href="/"
-            className="text-2xl font-semibold text-gray-800 transition-all hover:text-gray-600"
+            className="text-2xl font-semibold text-gray-800 transition-all hover:text-gray-600 dark:text-white"
           >
             Network Canvas
           </Link>
@@ -68,12 +68,12 @@ const Header: React.FC = () => {
         </button>
         <ul
           ref={node}
-          className={`fixed right-0 top-0 h-full w-full p-6 bg-white transform transition-transform duration-300 ease-in-out overflow-y-auto ${
+          className={`fixed right-0 top-0 h-full w-full p-6 bg-white dark:bg-purple-900 transform transition-transform duration-300 ease-in-out overflow-y-auto ${
             isOpen ? 'translate-x-0' : 'translate-x-full'
-          } lg:translate-x-0 lg:static lg:flex lg:bg-transparent lg:h-auto lg:items-center lg:gap-4 lg:overflow-visible lg:p-0 lg:w-auto`}
+          } lg:translate-x-0 lg:static lg:flex lg:bg-transparent lg:h-auto lg:items-center lg:gap-4 lg:overflow-visible lg:p-0 lg:w-auto `}
         >
           {isOpen && <MobileCloseButton onClick={() => setIsOpen(false)} />}
-          <NavLinks user={user} />
+          <NavLinks user={user} closeMenu={() => setIsOpen(false)} />
         </ul>
       </nav>
     </header>

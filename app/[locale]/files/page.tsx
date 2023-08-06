@@ -77,11 +77,11 @@ const FilesPage = () => {
         {files.map((file) => (
           <div
             key={file.id}
-            className="w-full p-2 m-2 text-center bg-white rounded dark:bg-gray-800 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"
+            className="w-full max-w-xs p-2 m-2 mx-auto text-center bg-white rounded dark:bg-gray-800 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"
             role="button"
             onClick={() => downloadFile(file)}
           >
-            <p className="text-purple-500 dark:text-purple-300">
+            <p className="text-purple-500 dark:text-purple-300 sm:mx-5">
               File number: {file.name}
             </p>
           </div>

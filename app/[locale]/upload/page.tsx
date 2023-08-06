@@ -72,15 +72,15 @@ export default function UploadPage() {
   if (status === 'authenticated' && user?.role === 'admin') {
         return (
           <div className="flex items-center justify-center min-h-screen bg-purple-600">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center w-full px-4 sm:w-3/4 md:w-1/2 lg:w-1/3">
               <h3 className="mb-4">{t('title')}</h3>
               <form
-                className="max-w-lg p-10 bg-white rounded-lg shadow-lg"
+                className="w-full p-10 bg-white rounded-lg shadow-lg"
                 onSubmit={submit}
               >
                 <div className="mb-4">
                   <input
-                    className="px-3 py-2 text-black border rounded-md"
+                    className="box-border w-full max-w-full px-3 py-2 text-black border rounded-md"
                     type="file"
                     accept=".json"
                     onChange={onFileChange}

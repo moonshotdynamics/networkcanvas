@@ -5,16 +5,18 @@ import { signOut } from 'next-auth/react';
 
 interface NavLinksProps {
   user: User | null;
+  closeMenu: () => void;
 }
 
-const NavLinks: React.FC<NavLinksProps> = ({ user }) => {
+const NavLinks: React.FC<NavLinksProps> = ({ user, closeMenu }) => {
   if (!user) {
     return (
       <>
         <li className="mb-2 lg:mb-0">
           <Link
             href="/"
-            className="text-gray-800 transition-all hover:text-gray-600"
+            className="text-gray-800 transition-all hover:text-gray-600 dark:text-white"
+            onClick={closeMenu}
           >
             Home
           </Link>
@@ -22,7 +24,8 @@ const NavLinks: React.FC<NavLinksProps> = ({ user }) => {
         <li className="mb-2 lg:mb-0">
           <Link
             href="/auth/login"
-            className="text-gray-800 transition-all hover:text-gray-600"
+            className="text-gray-800 transition-all hover:text-gray-600 dark:text-white"
+            onClick={closeMenu}
           >
             Login
           </Link>
@@ -30,11 +33,13 @@ const NavLinks: React.FC<NavLinksProps> = ({ user }) => {
         <li className="mb-2 lg:mb-0">
           <Link
             href="/auth/register"
-            className="text-gray-800 transition-all hover:text-gray-600"
+            className="text-gray-800 transition-all hover:text-gray-600 dark:text-white"
+            onClick={closeMenu}
           >
             Register
           </Link>
         </li>
+        <ThemeSwitcher />
       </>
     );
   }
@@ -44,7 +49,8 @@ const NavLinks: React.FC<NavLinksProps> = ({ user }) => {
       <li className="mb-2 lg:mb-0">
         <Link
           href="/"
-          className="text-gray-800 transition-all hover:text-gray-600"
+          className="text-gray-800 transition-all hover:text-gray-600 dark:text-white"
+          onClick={closeMenu}
         >
           Home
         </Link>
@@ -52,7 +58,8 @@ const NavLinks: React.FC<NavLinksProps> = ({ user }) => {
       <li className="mb-2 lg:mb-0">
         <Link
           href="/files"
-          className="text-gray-800 transition-all hover:text-gray-600"
+          className="text-gray-800 transition-all hover:text-gray-600 dark:text-white"
+          onClick={closeMenu}
         >
           Files
         </Link>
@@ -61,15 +68,16 @@ const NavLinks: React.FC<NavLinksProps> = ({ user }) => {
         <li className="mb-2 lg:mb-0">
           <Link
             href="/upload"
-            className="text-gray-800 transition-all hover:text-gray-600"
+            className="text-gray-800 transition-all hover:text-gray-600 dark:text-white"
+            onClick={closeMenu}
           >
             File Upload
           </Link>
         </li>
       )}
       <li
-        className="mb-2 text-gray-800 transition-all cursor-pointer lg:mb-0 hover:text-gray-600"
-        onClick={() => signOut()}
+        className="mb-2 text-gray-800 transition-all cursor-pointer lg:mb-0 hover:text-gray-600 dark:text-white"
+        onClick={() => { signOut();  closeMenu}}
       >
         Logout
       </li>

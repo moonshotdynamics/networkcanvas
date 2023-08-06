@@ -30,7 +30,7 @@ interface User extends UserProfile {
 export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/login',
-    error:'/auth/error'
+    error: '/auth/error',
   },
   session: {
     strategy: 'jwt',
@@ -57,19 +57,20 @@ export const authOptions: NextAuthOptions = {
             password: credentials?.password,
           }),
         });
-        
+
         const user = await res.json();
 
+        // https://github.com/nextauthjs/next-auth/issues/7638
         if (user.error) {
           throw new Error(user.error);
         } else {
-          return user
+          return user;
         }
       },
-    })
+    }),
   ],
   callbacks: {
-// @ts-ignore
+    // @ts-ignore
     signIn: async (user: User) => {
       if (user && user.account.provider === 'credentials') {
         return user;
@@ -120,7 +121,6 @@ export const authOptions: NextAuthOptions = {
               where: { email: user.email },
               include: { role: true },
             });
-
 
             if (dbUser) {
               token.id = dbUser.id;
